@@ -1,4 +1,6 @@
 import { CalculatorService } from "./calculator.service";
+import { TestBed } from "@angular/core/testing";
+import { LoggerService } from "./logger.service";
 
 describe("CalculatorService", () => {
   let calculatorService: CalculatorService, loggerServiceSpy: any;
@@ -9,7 +11,16 @@ describe("CalculatorService", () => {
       "testMethodToReturnValue",
     ]);
     loggerServiceSpy.testMethodToReturnValue.and.returnValue(2);
-    calculatorService = new CalculatorService(loggerServiceSpy);
+
+
+   TestBed.configureTestingModule({
+    providers:[
+        CalculatorService,
+        {provide:LoggerService, useValue:loggerServiceSpy}
+    ]
+   });
+   calculatorService = TestBed.inject(CalculatorService);
+
   });
 
   it("should adding two numbers and return the result", () => {
