@@ -9,9 +9,8 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from "@angular/common/http/testing";
-import { COURSES } from "../../../../server/db-data";
+import { COURSES, findLessonsForCourse } from "../../../../server/db-data";
 import { Course } from "../model/course";
-
 
 describe("CoursesService", () => {
   let coursesService: CoursesService,
@@ -51,7 +50,22 @@ describe("CoursesService", () => {
   });
 
   it("should retrive the lessons on accesnding order", () => {
-    pending();
+    coursesService.findLessons(12).subscribe((lessons) => {
+      expect(lessons).toBeTruthy();
+      expect(lessons.length).toEqual(3);
+      console.log(lessons);
+    });
+    const req = httpTestingController.expectOne(
+      (req) => req.url == "/api/lessons"
+    );
+    expect(req.request.method).toEqual("GET");
+    expect(req.request.params.get("courseId")).toEqual("12");
+    expect(req.request.params.get("filter")).toEqual("");
+    expect(req.request.params.get("sortOrder")).toEqual("asc");
+    expect(req.request.params.get("pageNumber")).toEqual("0");
+    expect(req.request.params.get("pageSize")).toEqual("3");
+    // Slicing the arrray due to pagingation is 3
+    req.flush({ payload: findLessonsForCourse(12).slice(0, 3) });
   });
 
   it("should update the course", () => {
@@ -74,7 +88,7 @@ describe("CoursesService", () => {
       () => fail("This will fail save course operation"),
       (err: HttpErrorResponse) => expect(err.status).toEqual(500)
     );
-    
+
     const req = httpTestingController.expectOne("/api/courses/5");
     expect(req.request.method).toEqual("PUT");
     req.flush("Save course failed", {
